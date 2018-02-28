@@ -131,7 +131,7 @@ function initMap() {
         default:
             break;
     }
-    console.log(points);
+      
     jsonPoints = JSON.stringify(points);
     pathResults.value = jsonPoints;
   })
@@ -149,30 +149,38 @@ function initMap() {
           if (status == google.maps.DirectionsStatus.OK){
               directionsDisplay.setMap(map);
               directionsDisplay.setDirections(result);
-              console.log(directionsDisplay);
           }
       })
   })
     
   $('#marker-list').on('click', '.delete', function(e){
       e.preventDefault();
-      var markerNode = $(this).closest('li'),
+      const markerNode = $(this).closest('.list-group-item'),
           marker = markerNode.data('marker'),
           markerIndex = markerNode.index();
       
-      markerList.splice(markerIndex,1);
       marker.setMap(null);
       markerNode.remove();
+      markerList.splice(markerIndex,1);
       updateMarkers(true);
       removeDirections();
+  }).on('mouseenter', '.list-group-item', function(e){
+      const marker = $(this).data('marker');
+      if(marker){
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+      }
+  }).on('mouseleave', '.list-group-item', function(e){
+      const marker = $(this).data('marker');
+      if (marker){
+        marker.setAnimation(null);
+      }
   })
 
     
     
-    
     // initialise sortable markers
     const sortable = new Sortable.default(document.querySelectorAll('#marker-list'), {
-        draggable: 'li',
+        draggable: '.list-group-item',
         appendTo: '#marker-list',
         classes:{
             'source:dragging':'list-group-item-info'
@@ -184,7 +192,19 @@ function initMap() {
         const removed = markerList.splice(event.oldIndex,1)[0];              
         markerList.splice(event.newIndex,0, removed)
     })
+    
+    sortable.on('sortable:start', (event)=>{
+        const source = $(event.dragEvent.data.originalSource),
+              marker = source.data('marker');
+        console.log(source)
+        setTimeout(function(){marker.setAnimation(google.maps.Animation.BOUNCE);},20);
+    })
     sortable.on('sortable:stop', (event)=>{
+        const source = $(event.dragEvent.data.originalSource),
+              marker = source.data('marker');
+        
+        setTimeout(function(){marker.setAnimation(null);},20);
+        
         markerList.forEach(function(marker, index){
             marker.setLabel(index.toString());
         })
@@ -236,12 +256,55 @@ function createMarker(event){
         position: event.latLng,
         map:map,
         draggable:true,
-        label: markerList.length.toString()
+        optimized:false,
+        label: markerList.length.toString(),
+        icon: {
+            url:'assets/marker-numbered.png',
+            labelOrigin: new google.maps.Point(15,15)
+        }
+    });
+    let markerTimer = null,
+        markerInterval = null;
+    
+    marker.custom = {label: marker.getLabel()}
+    
+    marker.addListener('mouseover', function(event){
+        $('#marker-list').children().filter(function(){
+            return $(this).data('marker') === marker
+        }).addClass('highlighted')
     })
+    marker.addListener('mouseout', function(event){
+        $('#marker-list').children().filter(function(){
+            return $(this).data('marker') === marker
+        }).removeClass('highlighted')
+    })
+    
     marker.addListener('drag', function(event){
         updateMarkers();
         removeDirections()
     });
+    
+    marker.addListener('animation_changed', function(event){
+        const marker = this;
+
+        clearTimeout(markerTimer);
+        
+        if(marker.getAnimation() === null){
+            markerTimer = setTimeout(function(){
+                clearInterval(markerInterval);
+                markerInterval = null;
+            },100)
+        } else {
+            if (markerInterval === null){
+                markerInterval = setInterval(function(){
+                    marker.setIcon({
+                         url:'assets/marker-numbered.png',
+                        labelOrigin: new google.maps.Point(15,15)
+                    })
+                },1000/60);
+            }
+        }
+    })
     markerList.push(marker);
     updateMarkers();
 }
@@ -254,8 +317,8 @@ function updateMarkers(forceRename){
         if (forceRename){
             marker.setLabel(index.toString());
         }
-        $('<li>',{
-            class:'list-group-item',
+        $('<div>',{
+            class:'list-group-item list-group-item-action',
             html: `Marker #${marker.getLabel()} 
                     <strong>@</strong><span class="text-muted font-italic">${position.lat().toFixed(4)}</span>,<span class="text-muted font-italic">${position.lng().toFixed(4)}</span>
                     <a href="#" class="btn btn-outline-danger btn-sm float-right delete">&times;</a>

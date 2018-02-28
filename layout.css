@@ -41,6 +41,9 @@ body {
 #marker-list:not(:empty) ~ #get-directions{
     display:inline-block;
 }
+#marker-list .list-group-item.highlighted{
+    background-color:#f8f9fa;
+}
 .footer {
   position: absolute;
   bottom: 0;
