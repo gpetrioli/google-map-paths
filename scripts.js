@@ -152,9 +152,21 @@ function initMap() {
               console.log(directionsDisplay);
           }
       })
-      
-
   })
+    
+  $('#marker-list').on('click', '.delete', function(e){
+      e.preventDefault();
+      var markerNode = $(this).closest('li'),
+          marker = markerNode.data('marker'),
+          markerIndex = markerNode.index();
+      
+      markerList.splice(markerIndex,1);
+      marker.setMap(null);
+      markerNode.remove();
+      updateMarkers(true);
+      removeDirections();
+  })
+
     
     
     
@@ -233,15 +245,21 @@ function createMarker(event){
     markerList.push(marker);
     updateMarkers();
 }
-function updateMarkers(){
+function updateMarkers(forceRename){
     let uiList = $('#marker-list');
     uiList.empty();
     
-    markerList.forEach(function(marker){
+    markerList.forEach(function(marker, index){
         const position = marker.getPosition();
+        if (forceRename){
+            marker.setLabel(index.toString());
+        }
         $('<li>',{
             class:'list-group-item',
-            html: `Marker #${marker.getLabel()} <strong>@</strong><span class="text-muted font-italic">${position.lat().toFixed(4)}</span>,<span class="text-muted font-italic">${position.lng().toFixed(4)}</span>`,
+            html: `Marker #${marker.getLabel()} 
+                    <strong>@</strong><span class="text-muted font-italic">${position.lat().toFixed(4)}</span>,<span class="text-muted font-italic">${position.lng().toFixed(4)}</span>
+                    <a href="#" class="btn btn-outline-danger btn-sm float-right delete">&times;</a>
+                  `,
             data:{
                 marker:marker
             }
