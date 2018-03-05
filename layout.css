@@ -36,7 +36,14 @@ body {
 }
 
 #myTab{margin-top:2px;}
-#marker-list .draggable-mirror{z-index:999;display:none}
+#marker-list .dragger{cursor:ns-resize}
+#marker-list .draggable-mirror{z-index:999;display:none!important}
+#marker-list .draggable--original{
+    opacity:0.3;
+    transform:scale(0.95);
+    z-index:0;
+}
+
 #get-derections{display:none;}
 #marker-list:not(:empty) ~ #get-directions{
     display:inline-block;

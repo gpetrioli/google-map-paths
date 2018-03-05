@@ -182,6 +182,7 @@ function initMap() {
     const sortable = new Sortable.default(document.querySelectorAll('#marker-list'), {
         draggable: '.list-group-item',
         appendTo: '#marker-list',
+        handle: '.dragger',
         classes:{
             'source:dragging':'list-group-item-info'
         }
@@ -318,10 +319,10 @@ function updateMarkers(forceRename){
             marker.setLabel(index.toString());
         }
         $('<div>',{
-            class:'list-group-item list-group-item-action',
-            html: `Marker #${marker.getLabel()} 
-                    <strong>@</strong><span class="text-muted font-italic">${position.lat().toFixed(4)}</span>,<span class="text-muted font-italic">${position.lng().toFixed(4)}</span>
-                    <a href="#" class="btn btn-outline-danger btn-sm float-right delete">&times;</a>
+            class:'list-group-item list-group-item-action d-flex p-0',
+            html: `<span class="float-left p-2 border-right dragger">⇅</span> 
+                    <div class="float-left p-2 mr-auto">Marker #${marker.getLabel()} <strong>@</strong><span class="text-muted font-italic" title="${position.lat()}">${position.lat().toFixed(4)}</span>,<span class="text-muted font-italic" title="${position.lng()}">${position.lng().toFixed(4)}</span></div>
+                    <a href="#" class="btn btn-outline-danger btn-sm delete align-self-start mt-1 mr-1">&times;</a>
                   `,
             data:{
                 marker:marker
