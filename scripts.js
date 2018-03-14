@@ -106,6 +106,23 @@ function initMap() {
         removeDirections();
     });
     
+    document.querySelector('#manual-marker').addEventListener('click', function(e){
+        e.preventDefault();
+        
+        const lat = +document.querySelector('#manual-latitude').value,
+              lng = +document.querySelector('#manual-longitude').value;
+        
+        if (lat && lng){
+            const fakeEvent = {
+                latLng: new google.maps.LatLng(lat, lng)
+            }
+            createMarker(fakeEvent);
+        } else {
+            alert('You must enter both latitude and longitude to add a marker.')
+        }
+        
+    })
+    
   document.querySelector('#save').addEventListener('click', function(e) {
       let points, jsonPoints;
     stopDrawing();
